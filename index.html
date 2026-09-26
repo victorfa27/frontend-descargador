@@ -4,99 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Descargador de Videos</title>
+    <!-- Cargamos Tailwind para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Cargamos FontAwesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">
-            <i class="fas fa-cloud-download-alt mr-2"></i>Descargador de Videos
+            <i class="fas fa-cloud-download-alt mr-2"></i>Descargador
         </h1>
         
         <div class="mb-4">
-            <input type="text" id="videoUrl" placeholder="Pega el enlace del video aquí..." class="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
+            <input type="text" id="videoUrl" placeholder="Pega el enlace del video aquí..." class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         
-        <button onclick="downloadVideo()" id="downloadBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300 flex justify-center items-center gap-2">
-            <span>Obtener Video</span>
-            <i class="fas fa-arrow-right"></i>
+        <button onclick="downloadVideo()" id="downloadBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300">
+            Obtener Enlace
         </button>
         
         <!-- Estado de carga -->
-        <div id="loading" class="hidden mt-6 flex-col items-center justify-center">
-            <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-            <p class="text-gray-600 text-sm">Procesando... (puede tardar un momento)</p>
+        <div id="loading" class="hidden mt-4 text-center text-gray-600 font-medium">
+            <i class="fas fa-circle-notch fa-spin text-blue-500 mr-2 text-xl align-middle"></i> Procesando enlace...
         </div>
         
-        <!-- Estado de error -->
-        <div id="error" class="hidden mt-4 text-center text-red-500 bg-red-50 p-3 rounded-md text-sm border border-red-200"></div>
+        <!-- Mensaje de error -->
+        <div id="error" class="hidden mt-4 text-center text-red-600 bg-red-100 p-2 rounded-md font-medium border border-red-300"></div>
         
         <!-- Resultados -->
-        <div id="result" class="hidden mt-6 border-t pt-6">
-            <img id="thumbnail" src="" alt="Thumbnail" class="w-full rounded-md mb-4 shadow-sm">
-            <h2 id="title" class="text-md font-semibold mb-4 text-gray-800 line-clamp-2"></h2>
+        <div id="result" class="hidden mt-6">
+            <img id="thumbnail" src="" alt="Miniatura del video" class="w-full rounded-md mb-4 shadow-sm border">
+            <h2 id="title" class="text-lg font-semibold mb-4 text-gray-800 line-clamp-2"></h2>
             
-            <a id="downloadLink" href="" target="_blank" download="video_descargado.mp4" class="flex justify-center items-center gap-2 w-full bg-green-500 text-white text-center font-bold py-3 px-4 rounded-md hover:bg-green-600 transition duration-300 shadow-sm mb-3">
-                <i class="fas fa-download"></i>
-                <span>Descargar Video</span>
-            </a>
-            
-            <!-- Caja de instrucciones obligatoria para descargas directas -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mt-4">
-                <p class="text-sm text-yellow-800 text-center">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    <b>¿Se abrió reproduciéndose?</b><br>
-                    Si al hacer clic el video se reproduce en otra pestaña, haz <b>clic derecho</b> sobre el video y selecciona <b>"Guardar video como..."</b> o toca los tres puntitos (⋮) del reproductor.
-                </p>
+            <!-- Aviso sobre reproducción automática -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 text-sm text-yellow-800 rounded-r-md">
+                <p class="font-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Instrucciones de descarga:</p>
+                <p>Por seguridad de tu navegador, si el video se empieza a reproducir, haz <b>clic derecho</b> (o mantén presionado en celular) y selecciona <b>"Guardar video como..."</b>.</p>
             </div>
+
+            <!-- Botón de descarga final -->
+            <a id="downloadLink" href="" target="_blank" download="video_descargado.mp4" class="block w-full bg-green-500 text-white text-center font-bold py-3 px-4 rounded-md hover:bg-green-600 transition duration-300 shadow-md">
+                <i class="fas fa-download mr-2"></i>Ir al Video
+            </a>
         </div>
     </div>
 
     <script>
+        // Tu backend de Render
         const BACKEND_URL = "https://backend-descargador.onrender.com"; 
 
         async function downloadVideo() {
-            const urlInput = document.getElementById('videoUrl').value.trim();
+            const urlInput = document.getElementById('videoUrl').value;
             const resultDiv = document.getElementById('result');
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             
             if (!urlInput) {
-                errorDiv.textContent = "Por favor ingresa un enlace válido.";
+                errorDiv.textContent = "Por favor ingresa una URL válida";
                 errorDiv.classList.remove('hidden');
                 return;
             }
 
-            // Ocultar estados previos
+            // Ocultar resultados previos y errores, mostrar spinner
             errorDiv.classList.add('hidden');
             resultDiv.classList.add('hidden');
             loadingDiv.classList.remove('hidden');
-            loadingDiv.classList.add('flex');
 
             try {
+                // Hacer la petición al motor en Python
                 const response = await fetch(`${BACKEND_URL}/download?url=${encodeURIComponent(urlInput)}`);
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Llenar datos
+                    // Cargar datos en el frontend
                     document.getElementById('title').textContent = data.title;
                     document.getElementById('thumbnail').src = data.thumbnail;
                     
-                    // Configurar el enlace de descarga
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = data.url;
                     
                     // Mostrar resultados
                     resultDiv.classList.remove('hidden');
                 } else {
-                    throw new Error(data.detail || "No se pudo extraer el video. Verifica que el enlace sea público.");
+                    throw new Error(data.detail || "Error al procesar el video. Revisa el link.");
                 }
             } catch (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.classList.remove('hidden');
             } finally {
+                // Ocultar spinner sin importar si fue éxito o error
                 loadingDiv.classList.add('hidden');
-                loadingDiv.classList.remove('flex');
             }
         }
     </script>
